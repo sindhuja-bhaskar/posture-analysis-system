@@ -1,0 +1,7 @@
+{
+    "neck_threshold": 25,
+    "shoulder_threshold": 10,
+    "torso_threshold": 20,
+    "min_visibility_confidence": 0.1,
+    "camera_index": 0
+}
