@@ -1,5 +1,7 @@
 """Session management: timer, statistics, pause/resume, summary (FR-006, FR-007)."""
 
+from __future__ import annotations
+
 import time
 from dataclasses import dataclass, field
 
@@ -17,6 +19,8 @@ class SessionStats:
     shoulder_angle_sum: float = 0.0
     torso_angle_sum: float = 0.0
     analyzed_frames: int = 0
+    # Segment length accumulators: label -> (sum_cm, count)
+    segment_sums: dict[str, list[float]] = field(default_factory=dict)
 
 
 class SessionManager:
@@ -91,6 +95,15 @@ class SessionManager:
             self._stats.shoulder_angle_sum += shoulder
             self._stats.torso_angle_sum += torso
 
+    def record_segments(self, segments: list) -> None:
+        """Record a snapshot of segment lengths for averaging in the summary."""
+        for seg in segments:
+            key = seg.label
+            if key not in self._stats.segment_sums:
+                self._stats.segment_sums[key] = [0.0, 0]
+            self._stats.segment_sums[key][0] += seg.length_cm
+            self._stats.segment_sums[key][1] += 1
+
     def stop(self) -> None:
         """Stop the session."""
         self._running = False
@@ -122,7 +135,7 @@ class SessionManager:
         avg_shoulder = s.shoulder_angle_sum / s.analyzed_frames if s.analyzed_frames else 0
         avg_torso = s.torso_angle_sum / s.analyzed_frames if s.analyzed_frames else 0
 
-        return (
+        summary = (
             f"\n{'='*50}\n"
             f"  SESSION SUMMARY\n"
             f"{'='*50}\n"
@@ -135,8 +148,18 @@ class SessionManager:
             f"  Avg Neck Angle:       {avg_neck:.1f} deg\n"
             f"  Avg Shoulder Angle:   {avg_shoulder:.1f} deg\n"
             f"  Avg Torso Angle:      {avg_torso:.1f} deg\n"
-            f"{'='*50}\n"
         )
+
+        if s.segment_sums:
+            summary += f"{'─'*50}\n"
+            summary += "  BODY SEGMENT LENGTHS (avg cm)\n"
+            summary += f"{'─'*50}\n"
+            for label, (total, count) in s.segment_sums.items():
+                avg = total / count
+                summary += f"  {label:<25s} {avg:6.1f} cm\n"
+
+        summary += f"{'='*50}\n"
+        return summary
 
     @staticmethod
     def _format_seconds(seconds: float) -> str:

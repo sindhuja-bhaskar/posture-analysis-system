@@ -15,6 +15,7 @@ DEFAULTS = {
     "torso_threshold": 20.0,
     "min_visibility_confidence": 0.5,
     "camera_index": 0,
+    "shoulder_width_cm": 40.0,
 }
 
 
@@ -27,6 +28,7 @@ class Config:
     torso_threshold: float = DEFAULTS["torso_threshold"]
     min_visibility_confidence: float = DEFAULTS["min_visibility_confidence"]
     camera_index: int = DEFAULTS["camera_index"]
+    shoulder_width_cm: float = DEFAULTS["shoulder_width_cm"]
 
     @classmethod
     def load(cls, path: str | Path | None = None) -> "Config":

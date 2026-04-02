@@ -12,6 +12,7 @@ Controls:
 import argparse
 import logging
 import sys
+import time
 
 import cv2
 
@@ -19,6 +20,7 @@ from src.config import Config
 from src.display_manager import DisplayManager
 from src.pose_detector import PoseDetector
 from src.posture_analyzer import PostureAnalyzer, PostureStatus
+from src.segment_measurer import measure_segments
 from src.session_manager import SessionManager
 from src.video_capture import VideoCapture
 
@@ -61,12 +63,27 @@ def main() -> int:
     session.start()
     logger.info("Posture monitoring session started. Press 'q' to quit, 'p' to pause.")
 
+    # Segment measurements update every 2 seconds, not every frame.
+    cached_segments = []
+    last_segment_time = 0.0
+    SEGMENT_INTERVAL = 2.0
+    windows_positioned = False
+
     try:
         while True:
             success, frame = camera.read_frame()
             if not success or frame is None:
                 logger.warning("Failed to read frame, skipping.")
                 continue
+
+            # Position both windows side-by-side on first valid frame.
+            if not windows_positioned:
+                fh, fw = frame.shape[:2]
+                cv2.namedWindow("Posture Analysis", cv2.WINDOW_AUTOSIZE)
+                cv2.namedWindow("Posture Info", cv2.WINDOW_AUTOSIZE)
+                cv2.moveWindow("Posture Analysis", 50, 50)
+                cv2.moveWindow("Posture Info", 50 + fw + 10, 50)
+                windows_positioned = True
 
             # Detect pose and analyze posture (skip analysis if paused).
             if session.is_paused:
@@ -79,6 +96,18 @@ def main() -> int:
                 pose_result = detector.detect(frame)
                 posture = analyzer.analyze(pose_result.landmarks, pose_result.detected)
                 landmarks = pose_result.landmarks
+
+                # Measure body segment lengths every 2 seconds.
+                now = time.time()
+                if now - last_segment_time >= SEGMENT_INTERVAL:
+                    h, w = frame.shape[:2]
+                    new_segments = measure_segments(
+                        landmarks, w, h, config.shoulder_width_cm,
+                    )
+                    if new_segments:
+                        cached_segments = new_segments
+                        session.record_segments(new_segments)
+                        last_segment_time = now
 
                 # Record frame stats.
                 if posture.angles:
@@ -96,6 +125,7 @@ def main() -> int:
                 frame, posture, landmarks,
                 session.elapsed_formatted(),
                 session.is_paused,
+                segments=cached_segments,
             )
 
             cv2.imshow("Posture Analysis", annotated)

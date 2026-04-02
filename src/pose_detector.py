@@ -45,13 +45,30 @@ class PoseResult:
 
 # Landmark indices we care about for posture analysis.
 LANDMARK_INDICES = {
+    # Head
     "nose": PoseLandmarkEnum.NOSE,
     "left_ear": PoseLandmarkEnum.LEFT_EAR,
     "right_ear": PoseLandmarkEnum.RIGHT_EAR,
+    # Upper body
     "left_shoulder": PoseLandmarkEnum.LEFT_SHOULDER,
     "right_shoulder": PoseLandmarkEnum.RIGHT_SHOULDER,
+    "left_elbow": PoseLandmarkEnum.LEFT_ELBOW,
+    "right_elbow": PoseLandmarkEnum.RIGHT_ELBOW,
+    "left_wrist": PoseLandmarkEnum.LEFT_WRIST,
+    "right_wrist": PoseLandmarkEnum.RIGHT_WRIST,
+    "left_index": PoseLandmarkEnum.LEFT_INDEX,
+    "right_index": PoseLandmarkEnum.RIGHT_INDEX,
+    # Lower body
     "left_hip": PoseLandmarkEnum.LEFT_HIP,
     "right_hip": PoseLandmarkEnum.RIGHT_HIP,
+    "left_knee": PoseLandmarkEnum.LEFT_KNEE,
+    "right_knee": PoseLandmarkEnum.RIGHT_KNEE,
+    "left_ankle": PoseLandmarkEnum.LEFT_ANKLE,
+    "right_ankle": PoseLandmarkEnum.RIGHT_ANKLE,
+    "left_heel": PoseLandmarkEnum.LEFT_HEEL,
+    "right_heel": PoseLandmarkEnum.RIGHT_HEEL,
+    "left_foot_index": PoseLandmarkEnum.LEFT_FOOT_INDEX,
+    "right_foot_index": PoseLandmarkEnum.RIGHT_FOOT_INDEX,
 }
 
 
