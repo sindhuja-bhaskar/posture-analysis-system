@@ -67,7 +67,6 @@ def main() -> int:
     cached_segments = []
     last_segment_time = 0.0
     SEGMENT_INTERVAL = 2.0
-    windows_positioned = False
 
     try:
         while True:
@@ -75,15 +74,6 @@ def main() -> int:
             if not success or frame is None:
                 logger.warning("Failed to read frame, skipping.")
                 continue
-
-            # Position both windows side-by-side on first valid frame.
-            if not windows_positioned:
-                fh, fw = frame.shape[:2]
-                cv2.namedWindow("Posture Analysis", cv2.WINDOW_AUTOSIZE)
-                cv2.namedWindow("Posture Info", cv2.WINDOW_AUTOSIZE)
-                cv2.moveWindow("Posture Analysis", 50, 50)
-                cv2.moveWindow("Posture Info", 50 + fw + 10, 50)
-                windows_positioned = True
 
             # Detect pose and analyze posture (skip analysis if paused).
             if session.is_paused:
